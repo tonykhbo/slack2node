@@ -1,0 +1,33 @@
+{
+  "name": "slacknode",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "@slack/events-api": "^2.3.0",
+    "@slack/rtm-api": "^5.0.2",
+    "@slack/web-api": "^5.1.0",
+    "body-parser": "^1.18.3",
+    "cookie-parser": "~1.4.3",
+    "cors": "^2.8.5",
+    "debug": "^4.1.1",
+    "ejs": "~2.5.2",
+    "express": "^4.16.4",
+    "express-jwt": "^5.3.1",
+    "jsonwebtoken": "^8.4.0",
+    "mongoose": "^4.13.17",
+    "morgan": "^1.9.1",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "requests": "^0.3.0",
+    "serve-favicon": "^2.5.0",
+    "twilio": "^3.26.1"
+  },
+  "main": "app.js",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {},
+  "description": ""
+}
