@@ -13,44 +13,28 @@ const { WebClient } = require('@slack/web-api');
 const slack_token = process.env.SLACK_TOKEN;
 
 // The client is initialized and then started to get an active connection to the platform
-const rtmRed = new RTMClient(slack_token);
-const rtmWhite = new RTMClient(slack_token);
+const rtm = new RTMClient(slack_token);
 const web = new WebClient(slack_token);
-
-rtmRed.start()
-  .catch(console.error);
-rtmWhite.start()
+rtm.start()
   .catch(console.error);
 
-// Calling `rtmRed.on(eventName, eventHandler)` allows you to handle events (see: https://api.slack.com/events)
+// Calling `rtm.on(eventName, eventHandler)` allows you to handle events (see: https://api.slack.com/events)
 // When the connection is active, the 'ready' event will be triggered
-rtmRed.on('ready', async () => {
+rtm.on('ready', async () => {
 
   // Sending a message requires a channel ID, a DM ID, an MPDM ID, or a group ID
   // The following value is used as an example
-  const channelId = 'CN3GAKSQM';
+  const channelId = process.env.CHANNEL_ID;
 
-  // The rtmRed client can send simple string messages
-  const res = await rtmRed.sendMessage('Node Server Up - Red', channelId);
+  // The RTM client can send simple string messages
+  const res = await rtm.sendMessage('Node Server Up', channelId);
 
   // `res` contains information about the sent message
   console.log('Message sent: ', res.ts);
 });
 
-rtmWhite.on('ready', async () => {
-
-  // Sending a message requires a channel ID, a DM ID, an MPDM ID, or a group ID
-  // The following value is used as an example
-  const channelId = 'CNL2SH272';
-
-  // The rtmRed client can send simple string messages
-  const res = await rtmWhite.sendMessage('Node Server Up - White', channelId);
-
-  // `res` contains information about the sent message
-  console.log('Message sent: ', res.ts);
-});
-
-rtmRed.on('message', (event) => {
+// After the connection is open, your app will start receiving other events.
+rtm.on('message', (event) => {
   // The argument is the event as shown in the reference docs.
   // For example, https://api.slack.com/events/user_typing
   console.log(event);
@@ -61,7 +45,7 @@ rtmRed.on('message', (event) => {
     if ((event.text.toLowerCase() == 'left' ) || (event.text.toLowerCase() == 'right' ) || (event.text.toLowerCase() == 'up' ) || (event.text.toLowerCase() == 'down' )) {
       console.log(event.text);
       request.post(
-        'https://directive-producer-demojam-zombie.apps.akrohg-openshift.redhatgov.io/camel/rest/produce/red',
+        `https://directive-producer-demojam-zombie.apps.akrohg-openshift.redhatgov.io/camel/rest/produce/${process.env.COLOR}`,
         { json: { username: res.user.name, direction: event.text  } },
         function (error, response, body) {
             if (!error && response.statusCode == 200) {
@@ -70,33 +54,6 @@ rtmRed.on('message', (event) => {
         }
       );
     };
-
-
-  })();
-});
-
-rtmWhite.on('message', (event) => {
-  // The argument is the event as shown in the reference docs.
-  // For example, https://api.slack.com/events/user_typing
-  console.log(event);
-  (async () => {
-  // See: https://api.slack.com/methods/chat.postMessage
-    const res = await web.users.info({token: slack_token, user: event.user});
-    console.log(res.user.name)
-    if ((event.text.toLowerCase() == 'left' ) || (event.text.toLowerCase() == 'right' ) || (event.text.toLowerCase() == 'up' ) || (event.text.toLowerCase() == 'down' )) {
-      console.log(event.text);
-      request.post(
-        'https://directive-producer-demojam-zombie.apps.akrohg-openshift.redhatgov.io/camel/rest/produce/white',
-        { json: { username: res.user.name, direction: event.text  } },
-        function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                console.log(body);
-            }
-        }
-      );
-    };
-
-
   })();
 });
 
