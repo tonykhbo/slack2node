@@ -26,6 +26,7 @@ rtm.start()
 // When the connection is active, the 'ready' event will be triggered
 rtm.on('ready', async () => {
   // The RTM client can send simple string messages
+  const channel
   const whiteRes = await rtm.sendMessage('Node Server Up', whiteChannelId);
   const redRes = await rtm.sendMessage('Node Server Up', redChannelId);
 
@@ -52,10 +53,10 @@ rtm.on('message', (event) => {
     const res = await web.users.info({token: slack_token, user: event.user});
     console.log(res.user.name)
     if ((event.text.toLowerCase() == 'left' ) || (event.text.toLowerCase() == 'right' ) || (event.text.toLowerCase() == 'up' ) || (event.text.toLowerCase() == 'down' )) {
-      console.log(event.text);
+      console.log(event.text.toLowerCase());
       request.post(
         `https://directive-producer-demojam-zombie.apps.akrohg-openshift.redhatgov.io/camel/rest/produce/${color}`,
-        { json: { username: res.user.name, direction: event.text  } },
+        { json: { username: res.user.name, direction: event.text.toLowerCase()  } },
         function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 console.log(body);
