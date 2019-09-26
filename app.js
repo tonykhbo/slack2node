@@ -24,7 +24,7 @@ rtm.on('ready', async () => {
 
   // Sending a message requires a channel ID, a DM ID, an MPDM ID, or a group ID
   // The following value is used as an example
-  const channelId = 'CN3GAKSQM';
+  const channelId = process.env.CHANNEL_ID;
 
   // The RTM client can send simple string messages
   const res = await rtm.sendMessage('Node Server Up', channelId);
@@ -45,7 +45,7 @@ rtm.on('message', (event) => {
     if ((event.text.toLowerCase() == 'left' ) || (event.text.toLowerCase() == 'right' ) || (event.text.toLowerCase() == 'up' ) || (event.text.toLowerCase() == 'down' )) {
       console.log(event.text);
       request.post(
-        'https://directive-producer-demojam-zombie.apps.akrohg-openshift.redhatgov.io/camel/rest/produce/red',
+        `https://directive-producer-demojam-zombie.apps.akrohg-openshift.redhatgov.io/camel/rest/produce/${process.env.COLOR}`,
         { json: { username: res.user.name, direction: event.text  } },
         function (error, response, body) {
             if (!error && response.statusCode == 200) {
@@ -54,17 +54,8 @@ rtm.on('message', (event) => {
         }
       );
     };
-
-
   })();
-  
-  
-  
-
-
 });
-
-
 
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
