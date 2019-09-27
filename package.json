@@ -19,6 +19,7 @@
     "jsonwebtoken": "^8.4.0",
     "mongoose": "^4.13.17",
     "morgan": "^1.9.1",
+    "node-cache": "^4.2.1",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "requests": "^0.3.0",

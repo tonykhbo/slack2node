@@ -9,6 +9,9 @@ const http = require('http');
 const { RTMClient } = require('@slack/rtm-api');
 const { WebClient } = require('@slack/web-api');
 
+const NodeCache = require( "node-cache" );
+const cache = new NodeCache( { stdTTL: 300, checkperiod: 30 } );
+
 // An access token (from your Slack app or custom integration - usually xoxb)
 const slack_token = process.env.SLACK_TOKEN;
   // Sending a message requires a channel ID, a DM ID, an MPDM ID, or a group ID
@@ -49,13 +52,18 @@ rtm.on('message', (event) => {
   // For example, https://api.slack.com/events/user_typing
   (async () => {
   // See: https://api.slack.com/methods/chat.postMessage
-    const res = await web.users.info({token: slack_token, user: event.user});
-    console.log(res.user.name)
+    var username = cache.get(event.user);
+    if (!username) {
+      username = await web.users.info({token: slack_token, user: event.user});
+      cache.set(event.user, username);
+    }
+
+    console.log(username);
     if ((event.text.toLowerCase() == 'left' ) || (event.text.toLowerCase() == 'right' ) || (event.text.toLowerCase() == 'up' ) || (event.text.toLowerCase() == 'down' )) {
       console.log(event.text.toLowerCase());
       request.post(
         `http://directive-producer:8080/camel/rest/produce/${color}`,
-        { json: { username: res.user.name, direction: event.text.toLowerCase() } },
+        { json: { username: username, direction: event.text.toLowerCase() } },
         function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 console.log(body);
