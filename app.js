@@ -54,7 +54,7 @@ rtm.on('message', (event) => {
   // See: https://api.slack.com/methods/chat.postMessage
     var username = cache.get(event.user);
     if (!username) {
-      username = await web.users.info({token: slack_token, user: event.user});
+      username = (await web.users.info({token: slack_token, user: event.user})).user.name;
       cache.set(event.user, username);
     }
 
