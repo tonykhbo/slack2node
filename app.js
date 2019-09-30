@@ -59,7 +59,8 @@ rtm.on('message', (event) => {
     }
 
     console.log(username);
-    if ((event.text.toLowerCase() == 'left' ) || (event.text.toLowerCase() == 'right' ) || (event.text.toLowerCase() == 'up' ) || (event.text.toLowerCase() == 'down' )) {
+    var direction = event.text.toLowerCase().trim();
+    if (["left", "right", "up", "down"].indexOf(direction) >= 0) {
       console.log(event.text.toLowerCase());
       request.post(
         `http://directive-producer:8080/camel/rest/produce/${color}`,
@@ -70,7 +71,7 @@ rtm.on('message', (event) => {
             }
         }
       );
-    };
+    }
   })();
 });
 
