@@ -29,8 +29,8 @@ rtm.start()
 // When the connection is active, the 'ready' event will be triggered
 rtm.on('ready', async () => {
   // The RTM client can send simple string messages
-  const whiteRes = await rtm.sendMessage('Node Server Up', whiteChannelId);
-  const redRes = await rtm.sendMessage('Node Server Up', redChannelId);
+  const whiteRes = await rtm.sendMessage(getWelcomeMessage("White"), whiteChannelId);
+  const redRes = await rtm.sendMessage(getWelcomeMessage("Red"), redChannelId);
 
   // `res` contains information about the sent message
   console.log('Message sent: ', whiteRes.ts);
@@ -39,31 +39,35 @@ rtm.on('ready', async () => {
 
 // After the connection is open, your app will start receiving other events.
 rtm.on('message', (event) => {
-  var color;
-  console.log(event);
-  if ( event.channel == whiteChannelId ) {
-    color = 'white';
-  } else if ( event.channel == redChannelId ) {
-    color = 'red';
-  } else {
-    return;
-  }
   // The argument is the event as shown in the reference docs.
   // For example, https://api.slack.com/events/user_typing
   (async () => {
+    var color;
+    console.log(event);
+    if ( event.channel == whiteChannelId ) {
+      color = 'White';
+    } else if ( event.channel == redChannelId ) {
+      color = 'Red';
+    } else {
+      return;
+    }
+    
+    if (event.subtype == 'channel_join') {
+      rtm.sendMessage(getWelcomeMessage(color, event.user), event.channel);
+      return;
+    }
   // See: https://api.slack.com/methods/chat.postMessage
     var username = cache.get(event.user);
     if (!username) {
-      username = (await web.users.info({token: slack_token, user: event.user})).user.name;
+      username = (await web.users.info({token: slack_token, user: event.user})).user.real_name;
       cache.set(event.user, username);
     }
-
     console.log(username);
     var direction = event.text.toLowerCase().trim();
     if (["left", "right", "up", "down"].indexOf(direction) >= 0) {
       console.log(event.text.toLowerCase());
       request.post(
-        `http://directive-producer:8080/camel/rest/produce/${color}`,
+        `http://directive-producer:8080/camel/rest/produce/${color.toLowerCase()}`,
         { json: { username: username, direction: event.text.toLowerCase() } },
         function (error, response, body) {
             if (!error && response.statusCode == 200) {
@@ -96,3 +100,11 @@ app.use(cors());
 module.exports = app;
 
 http.createServer(app).listen(1337, '127.0.0.1');
+
+function getWelcomeMessage(color, user) {
+  var message = `Welcome to *Team ${color} Hat*! Type "up", "down", "left", and "right" to help your Shadowman reach the goal first!`
+  if (user) {
+    message = `Hey, <@${user}>! ${message}`;
+  }
+  return message;
+}
